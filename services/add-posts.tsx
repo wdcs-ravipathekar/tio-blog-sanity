@@ -185,7 +185,7 @@ const fetchAndUpdateAuthorDetails = async (
   postDetailsObj: PostDetails,
   sanityClient: SanityClient
 ) => {
-  console.log("🚀 ~ fetchAndUpdateAuthorDetails:")
+  // console.log("🚀 ~ fetchAndUpdateAuthorDetails:")
 
   // Finding author's sanity id if already fetched author details before
   if (authorDetails[author]) {
@@ -231,7 +231,7 @@ const fetchAndUpdateLanguageDetails = async (
   postDetailsObj: PostDetails,
   sanityClient: SanityClient
 ) => {
-  console.log("🚀 ~ fetchAndUpdateLanguageDetails:")
+  // console.log("🚀 ~ fetchAndUpdateLanguageDetails:")
 
   // Finding language's sanity id if already fetched language details before
   if (languageDetails[language]) {
@@ -277,7 +277,7 @@ const fetchAndUpdateCategoryDetails = async (
   postDetailsObj: PostDetails,
   sanityClient: SanityClient
 ) => {
-  console.log("🚀 ~ fetchAndUpdateCategoryDetails:")
+  // console.log("🚀 ~ fetchAndUpdateCategoryDetails:")
 
   // Finding category's sanity id if already fetched category details before
   if (categoryDetails[category]) {
@@ -330,11 +330,11 @@ const uploadAndGetImageIdDetails = async (
     if (imageDetails[imageUrl]) return imageDetails[imageUrl];
 
     // Getting image stream data from image url
-    console.time("fetchImageData");
+    // console.time("fetchImageData");
     const imageData = await fetch(imageUrl);
     const imageStream = imageData.body;
-    console.timeEnd("fetchImageData");
-    console.log();
+    // console.timeEnd("fetchImageData");
+    // console.log();
 
     // Uploading the image to sanity to get sanity id
     const assetDocument = await createSanityClient("staging").assets.upload(
@@ -368,7 +368,7 @@ export const mapDataToDefinedSchema = async (
   sanityClient: SanityClient,
   referenceDetails: ReferenceDetails,
 ): Promise<PostDetails> => {
-  console.log("🚀 ~ mapDataToDefinedSchema:")
+  // console.log("🚀 ~ mapDataToDefinedSchema:")
   const {
     Body: body,
     Meta: description,
@@ -398,36 +398,36 @@ export const mapDataToDefinedSchema = async (
 
   try {
     // Mapping post content
-    console.time("convertHtmlToBlocks");
+    // console.time("convertHtmlToBlocks");
     convertHtmlToBlocks(body, postDetailsObj);
-    console.timeEnd("convertHtmlToBlocks");
-    console.log();
+    // console.timeEnd("convertHtmlToBlocks");
+    // console.log();
 
     // await Promise.all([
       // Fetching and updating author details
-    console.time("fetchAndUpdateAuthorDetails");
+    // console.time("fetchAndUpdateAuthorDetails");
     await fetchAndUpdateAuthorDetails(author, authorDetails, postDetailsObj, sanityClient);
-    console.timeEnd("fetchAndUpdateAuthorDetails");
-    console.log();
+    // console.timeEnd("fetchAndUpdateAuthorDetails");
+    // console.log();
 
     // Fetching and updating category details
-    console.time("fetchAndUpdateCategoryDetails");
+    // console.time("fetchAndUpdateCategoryDetails");
     await fetchAndUpdateCategoryDetails(category, categoryDetails, postDetailsObj, sanityClient);
-    console.timeEnd("fetchAndUpdateCategoryDetails");
-    console.log();
+    // console.timeEnd("fetchAndUpdateCategoryDetails");
+    // console.log();
 
     // Fetching and updating language details
-    console.time("fetchAndUpdateLanguageDetails");
+    // console.time("fetchAndUpdateLanguageDetails");
     await fetchAndUpdateLanguageDetails(language, languageDetails, postDetailsObj, sanityClient);
-    console.timeEnd("fetchAndUpdateLanguageDetails");
+    // console.timeEnd("fetchAndUpdateLanguageDetails");
     // ]);
-    console.log();
+    // console.log();
 
     // uploading image to the sanity and getting sanity id of the image for reference
-    console.time("uploadAndGetImageIdDetails");
+    // console.time("uploadAndGetImageIdDetails");
     const imageId = await uploadAndGetImageIdDetails(coverImage, imageDetails, sanityClient);
-    console.timeEnd("uploadAndGetImageIdDetails");
-    console.log();
+    // console.timeEnd("uploadAndGetImageIdDetails");
+    // console.log();
 
     postDetailsObj['coverImage'] = {
       _type: 'image',

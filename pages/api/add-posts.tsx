@@ -118,7 +118,7 @@ const handlePostCreation = async (reqBody: ReqBody) => {
       // console.log("🚀 ~ handlePostCreation ~ create:")
 
       // // Adding a delay of 10 seconds to avoid rate limiting issues
-      await new Promise((resolve) => setTimeout(resolve, 5000)); 
+      // await new Promise((resolve) => setTimeout(resolve, 5000)); 
     } catch (error: any) {
       errorDetailsObj.push({ slug, errorDescription: `${error.message || error || 'Something went wrong while adding post'}` });
       continue;
@@ -146,15 +146,15 @@ const queue = new Worker(
   async (job) => {
     try {
       const data = job.data;
-      console.log("\nlogger-------> ~ add-posts.tsx:449 ~ data:", data);
+      // console.log("\nlogger-------> ~ add-posts.tsx:449 ~ data:", data);
   
       const { item, sanityClient, authorDetails, languageDetails, categoryDetails, imageDetails } = data;
   
       // Mapping CSV data according to the predefined post schema
-        const postDetailsObj = await mapDataToDefinedSchema(item, sanityClient, { authorDetails, languageDetails, categoryDetails, imageDetails });
-        // Creating post in sanity
-        await createSanityClient("staging").create(postDetailsObj);
-        console.log("🚀 ~ handlePostCreation ~ create:")
+      const postDetailsObj = await mapDataToDefinedSchema(item, sanityClient, { authorDetails, languageDetails, categoryDetails, imageDetails });
+      // Creating post in sanity
+      await createSanityClient("staging").create(postDetailsObj);
+      console.log("🚀 ~ handlePostCreation ~ create:")
   
       console.log(`Processed post: ${data.item['URL Slug']}`);
     
@@ -167,8 +167,8 @@ const queue = new Worker(
   { connection: redis }
 );
 
-queue.on("active", () => {
-  console.error("Queue active:");
+queue.on("active", (job, err) => {
+  console.error("Queue active:", err);
 });
 
 // Job completed event
