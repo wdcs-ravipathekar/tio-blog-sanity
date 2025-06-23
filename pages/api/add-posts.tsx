@@ -118,7 +118,7 @@ const handlePostCreation = async (reqBody: ReqBody) => {
       // console.log("🚀 ~ handlePostCreation ~ create:")
 
       // // Adding a delay of 10 seconds to avoid rate limiting issues
-      // await new Promise((resolve) => setTimeout(resolve, 10000)); 
+      await new Promise((resolve) => setTimeout(resolve, 5000)); 
     } catch (error: any) {
       errorDetailsObj.push({ slug, errorDescription: `${error.message || error || 'Something went wrong while adding post'}` });
       continue;
