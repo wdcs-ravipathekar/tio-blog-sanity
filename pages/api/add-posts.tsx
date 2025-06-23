@@ -77,13 +77,14 @@ const handlePostCreation = async (reqBody: ReqBody) => {
         continue;
       }
 
-      // await deleteAllPosts(dataset);
-
       // Mapping CSV data according to the predefined post schema
-      const postDetailsObj = await mapDataToDefinedSchema(item, dataset, { authorDetails, languageDetails, categoryDetails, imageDetails }, sanityClient);
+      const postDetailsObj = await mapDataToDefinedSchema(item, sanityClient, { authorDetails, languageDetails, categoryDetails, imageDetails });
       // Creating post in sanity
       await sanityClient.create(postDetailsObj);
       console.log("🚀 ~ handlePostCreation ~ create:")
+
+      // Adding a delay of 10 seconds to avoid rate limiting issues
+      await new Promise((resolve) => setTimeout(resolve, 10000)); 
     } catch (error: any) {
       errorDetailsObj.push({ slug, errorDescription: `${error.message || error || 'Something went wrong while adding post'}` });
       continue;
@@ -112,7 +113,7 @@ export default function handler(req: any, res: any) {
     try {
       // Starting time log
       console.log(`(Log) Started - Add posts via CSV upload - ${new Date()}`);
-      await handlePostCreation(data as ReqBody);
+      handlePostCreation(data as ReqBody);
       res.status(200).json({ message: 'Success' });
     } catch (error) {
       console.error(error);
@@ -125,7 +126,7 @@ export default function handler(req: any, res: any) {
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '40mb',
+      sizeLimit: '20mb',
     }
   }
 }

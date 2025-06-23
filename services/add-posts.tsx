@@ -1,10 +1,10 @@
-import axios from 'axios';
 import { htmlToBlocks } from '@sanity/block-tools';
-import { Schema } from '@sanity/schema';
-import { JSDOM } from 'jsdom';
 import { SanityClient } from '@sanity/client';
+import { Schema } from '@sanity/schema';
+// import axios from 'axios';
+import { JSDOM } from 'jsdom';
+import fetch from 'node-fetch';
 
-import { createSanityClient } from '../lib/createSanityClient';
 import { CsvData, PostDetails, ReferenceDetails } from '../types';
 
 /**
@@ -319,7 +319,7 @@ const fetchAndUpdateCategoryDetails = async (
 const uploadAndGetImageIdDetails = async (
   imageUrl: string,
   imageDetails: Record<string, string>,
-    sanityClient: SanityClient
+  sanityClient: SanityClient
 
 ): Promise<string> => {
   console.log("🚀 ~ uploadAndGetImageIdDetails:")
@@ -328,13 +328,20 @@ const uploadAndGetImageIdDetails = async (
     // Checking details if already uploaded to sanity
     if (imageDetails[imageUrl]) return imageDetails[imageUrl];
 
-    // Getting image buffer data from image url
-    const imageData = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    // Getting image stream data from image url
+    console.time("fetchImageData");
+    const imageData = await fetch(imageUrl);
+    const imageStream = imageData.body;
+    console.timeEnd("fetchImageData");
+    console.log();
 
     // Uploading the image to sanity to get sanity id
     const assetDocument = await sanityClient.assets.upload(
       'image',
-      imageData.data
+      imageStream,
+      {
+        timeout: 60000, // 60 seconds timeout
+      }
     );
 
     // Adding the details in imageDetails obj
@@ -357,9 +364,8 @@ const uploadAndGetImageIdDetails = async (
  */
 export const mapDataToDefinedSchema = async (
   data: CsvData,
-  dataset: string,
+  sanityClient: SanityClient,
   referenceDetails: ReferenceDetails,
-  sanityClient: SanityClient
 ): Promise<PostDetails> => {
   console.log("🚀 ~ mapDataToDefinedSchema:")
   const {
@@ -391,20 +397,37 @@ export const mapDataToDefinedSchema = async (
 
   try {
     // Mapping post content
+    console.time("convertHtmlToBlocks");
     convertHtmlToBlocks(body, postDetailsObj);
+    console.timeEnd("convertHtmlToBlocks");
+    console.log();
+
     // await Promise.all([
       // Fetching and updating author details
+    console.time("fetchAndUpdateAuthorDetails");
     await fetchAndUpdateAuthorDetails(author, authorDetails, postDetailsObj, sanityClient);
+    console.timeEnd("fetchAndUpdateAuthorDetails");
+    console.log();
 
     // Fetching and updating category details
+    console.time("fetchAndUpdateCategoryDetails");
     await fetchAndUpdateCategoryDetails(category, categoryDetails, postDetailsObj, sanityClient);
+    console.timeEnd("fetchAndUpdateCategoryDetails");
+    console.log();
 
     // Fetching and updating language details
+    console.time("fetchAndUpdateLanguageDetails");
     await fetchAndUpdateLanguageDetails(language, languageDetails, postDetailsObj, sanityClient);
+    console.timeEnd("fetchAndUpdateLanguageDetails");
     // ]);
+    console.log();
 
     // uploading image to the sanity and getting sanity id of the image for reference
+    console.time("uploadAndGetImageIdDetails");
     const imageId = await uploadAndGetImageIdDetails(coverImage, imageDetails, sanityClient);
+    console.timeEnd("uploadAndGetImageIdDetails");
+    console.log();
+
     postDetailsObj['coverImage'] = {
       _type: 'image',
       asset: {
