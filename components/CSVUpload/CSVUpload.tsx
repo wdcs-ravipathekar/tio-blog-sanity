@@ -42,7 +42,7 @@ const FileUpload = () => {
         setErrorMesg('Something went wrong while uploading CSV. Please try again after sometime.')
       } else {
         try {
-          await axios.post('/api/add-posts', {
+          axios.post('/api/add-posts', {
             data,
             dataset,
           })

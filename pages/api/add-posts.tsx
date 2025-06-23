@@ -113,7 +113,7 @@ export default function handler(req: any, res: any) {
     try {
       // Starting time log
       console.log(`(Log) Started - Add posts via CSV upload - ${new Date()}`);
-      handlePostCreation(data as ReqBody);
+      await handlePostCreation(data as ReqBody);
       res.status(200).json({ message: 'Success' });
     } catch (error) {
       console.error(error);
