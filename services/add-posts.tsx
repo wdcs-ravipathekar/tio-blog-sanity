@@ -1,7 +1,8 @@
+import axios from 'axios';
 import { htmlToBlocks } from '@sanity/block-tools';
 import { Schema } from '@sanity/schema';
-import axios from 'axios';
 import { JSDOM } from 'jsdom';
+import { SanityClient } from '@sanity/client';
 
 import { createSanityClient } from '../lib/createSanityClient';
 import { CsvData, PostDetails, ReferenceDetails } from '../types';
@@ -181,7 +182,7 @@ const fetchAndUpdateAuthorDetails = async (
   author: string,
   authorDetails: Record<string, string>,
   postDetailsObj: PostDetails,
-  dataset: string
+  sanityClient: SanityClient
 ) => {
   console.log("🚀 ~ fetchAndUpdateAuthorDetails:")
 
@@ -200,7 +201,7 @@ const fetchAndUpdateAuthorDetails = async (
   }`;
 
   // Fertching author details
-  const res = await createSanityClient(dataset).fetch(query, { author });
+  const res = await sanityClient.fetch(query, { author });
 
   // If author details not found then throwing error
   if (!res) throw { message: 'Author details not found' };
@@ -227,7 +228,7 @@ const fetchAndUpdateLanguageDetails = async (
   language: string,
   languageDetails: Record<string, string>,
   postDetailsObj: PostDetails,
-  dataset: string
+  sanityClient: SanityClient
 ) => {
   console.log("🚀 ~ fetchAndUpdateLanguageDetails:")
 
@@ -246,7 +247,7 @@ const fetchAndUpdateLanguageDetails = async (
   }`;
 
   // Fertching language details
-  const res = await createSanityClient(dataset).fetch(query, { language });
+  const res = await sanityClient.fetch(query, { language });
 
   // If language details not found then throwing error
   if (!res) throw { message: 'Language details not found' };
@@ -273,7 +274,7 @@ const fetchAndUpdateCategoryDetails = async (
   category: string,
   categoryDetails: Record<string, string>,
   postDetailsObj: PostDetails,
-  dataset: string
+  sanityClient: SanityClient
 ) => {
   console.log("🚀 ~ fetchAndUpdateCategoryDetails:")
 
@@ -292,7 +293,7 @@ const fetchAndUpdateCategoryDetails = async (
   }`;
 
   // Fertching category details
-  const res = await createSanityClient(dataset).fetch(query, { category });
+  const res = await sanityClient.fetch(query, { category });
 
   // If category details not found then throwing error
   if (!res) throw { messag: 'Category details not found' };
@@ -318,7 +319,7 @@ const fetchAndUpdateCategoryDetails = async (
 const uploadAndGetImageIdDetails = async (
   imageUrl: string,
   imageDetails: Record<string, string>,
-    dataset: string
+    sanityClient: SanityClient
 
 ): Promise<string> => {
   console.log("🚀 ~ uploadAndGetImageIdDetails:")
@@ -331,7 +332,7 @@ const uploadAndGetImageIdDetails = async (
     const imageData = await axios.get(imageUrl, { responseType: 'arraybuffer' });
 
     // Uploading the image to sanity to get sanity id
-    const assetDocument = await createSanityClient(dataset).assets.upload(
+    const assetDocument = await sanityClient.assets.upload(
       'image',
       imageData.data
     );
@@ -357,7 +358,8 @@ const uploadAndGetImageIdDetails = async (
 export const mapDataToDefinedSchema = async (
   data: CsvData,
   dataset: string,
-  referenceDetails: ReferenceDetails
+  referenceDetails: ReferenceDetails,
+  sanityClient: SanityClient
 ): Promise<PostDetails> => {
   console.log("🚀 ~ mapDataToDefinedSchema:")
   const {
@@ -392,17 +394,17 @@ export const mapDataToDefinedSchema = async (
     convertHtmlToBlocks(body, postDetailsObj);
     // await Promise.all([
       // Fetching and updating author details
-    await fetchAndUpdateAuthorDetails(author, authorDetails, postDetailsObj, dataset);
+    await fetchAndUpdateAuthorDetails(author, authorDetails, postDetailsObj, sanityClient);
 
     // Fetching and updating category details
-    await fetchAndUpdateCategoryDetails(category, categoryDetails, postDetailsObj, dataset);
+    await fetchAndUpdateCategoryDetails(category, categoryDetails, postDetailsObj, sanityClient);
 
     // Fetching and updating language details
-    await fetchAndUpdateLanguageDetails(language, languageDetails, postDetailsObj, dataset);
+    await fetchAndUpdateLanguageDetails(language, languageDetails, postDetailsObj, sanityClient);
     // ]);
 
     // uploading image to the sanity and getting sanity id of the image for reference
-    const imageId = await uploadAndGetImageIdDetails(coverImage, imageDetails, dataset);
+    const imageId = await uploadAndGetImageIdDetails(coverImage, imageDetails, sanityClient);
     postDetailsObj['coverImage'] = {
       _type: 'image',
       asset: {

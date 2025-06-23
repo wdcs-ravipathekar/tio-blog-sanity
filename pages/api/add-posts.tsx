@@ -41,6 +41,14 @@ const userSchema = Joi.object({
   'Blog Post Banner': Joi.boolean().required().default(true),
 });
 
+  async function deleteAllPosts(dataset: string) {
+    const posts = await createSanityClient(dataset).fetch(`*[_type == "post"]{_id}`);
+    console.log("\nlogger-------> ~ add-posts.tsx:60 ~ deleteAllPosts ~ posts:", posts);
+    const deletions = posts.map(post => createSanityClient(dataset).delete(post._id));
+    await Promise.all(deletions);
+    console.log(`${posts.length} posts deleted.`);
+  }
+
 /**
  * Function to handle post creation
  * @param {Object} reqBody Array of object containing parsed CSV data
@@ -53,6 +61,8 @@ const handlePostCreation = async (reqBody: ReqBody) => {
   const errorDetailsObj: ErrorDetails[] = [];
 
   const { data, dataset } = reqBody;
+
+  const sanityClient = await createSanityClient(dataset);
 
   for (const item of data) {
     const { 'URL Slug': slug } = item;
@@ -67,10 +77,12 @@ const handlePostCreation = async (reqBody: ReqBody) => {
         continue;
       }
 
+      // await deleteAllPosts(dataset);
+
       // Mapping CSV data according to the predefined post schema
-      const postDetailsObj = await mapDataToDefinedSchema(item, dataset, { authorDetails, languageDetails, categoryDetails, imageDetails });
+      const postDetailsObj = await mapDataToDefinedSchema(item, dataset, { authorDetails, languageDetails, categoryDetails, imageDetails }, sanityClient);
       // Creating post in sanity
-      await createSanityClient(dataset).create(postDetailsObj);
+      await sanityClient.create(postDetailsObj);
       console.log("🚀 ~ handlePostCreation ~ create:")
     } catch (error: any) {
       errorDetailsObj.push({ slug, errorDescription: `${error.message || error || 'Something went wrong while adding post'}` });
