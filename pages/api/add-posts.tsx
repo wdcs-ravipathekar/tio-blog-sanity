@@ -98,12 +98,6 @@ const handlePostCreation = async (reqBody: ReqBody) => {
         categoryDetails,
         imageDetails,
         sanityClient,
-      }, {
-        attempts: 3, // Retry up to 3 times in case of failure
-        backoff: {
-          type: 'exponential', // Exponential backoff for retries
-          delay: 5000, // Initial delay of 5 seconds
-        },
       }).then(() => {
         console.log(`Post creation job added to the queue for slug: ${slug}`);
       }).catch((err) => {
