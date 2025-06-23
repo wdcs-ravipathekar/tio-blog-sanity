@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 import fetch from 'node-fetch';
 
 import { CsvData, PostDetails, ReferenceDetails } from '../types';
+import { createSanityClient } from '../lib/createSanityClient';
 
 /**
  * Function to map content, like, paragraph, headings, image of the post and modify the post details object
@@ -201,7 +202,7 @@ const fetchAndUpdateAuthorDetails = async (
   }`;
 
   // Fertching author details
-  const res = await sanityClient.fetch(query, { author });
+  const res = await createSanityClient("staging").fetch(query, { author });
 
   // If author details not found then throwing error
   if (!res) throw { message: 'Author details not found' };
@@ -247,7 +248,7 @@ const fetchAndUpdateLanguageDetails = async (
   }`;
 
   // Fertching language details
-  const res = await sanityClient.fetch(query, { language });
+  const res = await createSanityClient("staging").fetch(query, { language });
 
   // If language details not found then throwing error
   if (!res) throw { message: 'Language details not found' };
@@ -293,7 +294,7 @@ const fetchAndUpdateCategoryDetails = async (
   }`;
 
   // Fertching category details
-  const res = await sanityClient.fetch(query, { category });
+  const res = await createSanityClient("staging").fetch(query, { category });
 
   // If category details not found then throwing error
   if (!res) throw { messag: 'Category details not found' };
@@ -336,7 +337,7 @@ const uploadAndGetImageIdDetails = async (
     console.log();
 
     // Uploading the image to sanity to get sanity id
-    const assetDocument = await sanityClient.assets.upload(
+    const assetDocument = await createSanityClient("staging").assets.upload(
       'image',
       imageStream,
       {

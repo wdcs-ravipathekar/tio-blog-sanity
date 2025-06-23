@@ -5,6 +5,17 @@ import { createSanityClient } from '../../lib/createSanityClient';
 import { mapDataToDefinedSchema } from '../../services/add-posts';
 import { sendAddPostaReportMail } from '../../services/email.service';
 import { ErrorDetails,ReqBody} from '../../types';
+import { postQueue } from '../../lib/queue';
+import { de } from 'date-fns/locale';
+
+import { Worker, ConnectionOptions } from 'bullmq';
+
+const redis: ConnectionOptions = {
+  username: 'default',
+  password: 'AemuQzk2F4gkVyZTvZKBbMgsQvaAJDOR',
+  host: 'redis-19125.c81.us-east-1-2.ec2.redns.redis-cloud.com',
+  port: 19125
+};
 
 // Validation schema
 const userSchema = Joi.object({
@@ -77,14 +88,37 @@ const handlePostCreation = async (reqBody: ReqBody) => {
         continue;
       }
 
-      // Mapping CSV data according to the predefined post schema
-      const postDetailsObj = await mapDataToDefinedSchema(item, sanityClient, { authorDetails, languageDetails, categoryDetails, imageDetails });
-      // Creating post in sanity
-      await sanityClient.create(postDetailsObj);
-      console.log("🚀 ~ handlePostCreation ~ create:")
+      // await deleteAllPosts(dataset);
 
-      // Adding a delay of 10 seconds to avoid rate limiting issues
-      await new Promise((resolve) => setTimeout(resolve, 10000)); 
+      postQueue.add('postQueue', {
+        item,
+        dataset,
+        authorDetails,
+        languageDetails,
+        categoryDetails,
+        imageDetails,
+        sanityClient,
+      }, {
+        attempts: 3, // Retry up to 3 times in case of failure
+        backoff: {
+          type: 'exponential', // Exponential backoff for retries
+          delay: 5000, // Initial delay of 5 seconds
+        },
+      }).then(() => {
+        console.log(`Post creation job added to the queue for slug: ${slug}`);
+      }).catch((err) => {
+        console.error(`Failed to add post creation job to the queue for slug: ${slug}`, err);
+        errorDetailsObj.push({ slug, errorDescription: `Queue Error - ${err.message}` });
+      });
+
+      // Mapping CSV data according to the predefined post schema
+      // const postDetailsObj = await mapDataToDefinedSchema(item, sanityClient, { authorDetails, languageDetails, categoryDetails, imageDetails });
+      // // Creating post in sanity
+      // await sanityClient.create(postDetailsObj);
+      // console.log("🚀 ~ handlePostCreation ~ create:")
+
+      // // Adding a delay of 10 seconds to avoid rate limiting issues
+      // await new Promise((resolve) => setTimeout(resolve, 10000)); 
     } catch (error: any) {
       errorDetailsObj.push({ slug, errorDescription: `${error.message || error || 'Something went wrong while adding post'}` });
       continue;
@@ -101,11 +135,52 @@ const handlePostCreation = async (reqBody: ReqBody) => {
   }
 
   // Sending the report via email
-  sendAddPostaReportMail(csvString);
+  // sendAddPostaReportMail(csvString);
 
   // Completion time log
   console.log(`(Log) Completed - Add posts via CSV upload - ${new Date()}`);
 };
+
+const queue = new Worker(
+  'postQueue',
+  async (job) => {
+    try {
+      const data = job.data;
+      console.log("\nlogger-------> ~ add-posts.tsx:449 ~ data:", data);
+  
+      const { item, sanityClient, authorDetails, languageDetails, categoryDetails, imageDetails } = data;
+  
+      // Mapping CSV data according to the predefined post schema
+        const postDetailsObj = await mapDataToDefinedSchema(item, sanityClient, { authorDetails, languageDetails, categoryDetails, imageDetails });
+        // Creating post in sanity
+        await createSanityClient("staging").create(postDetailsObj);
+        console.log("🚀 ~ handlePostCreation ~ create:")
+  
+      console.log(`Processed post: ${data.item['URL Slug']}`);
+    
+      
+    } catch (error) {
+      console.log("\nlogger-------> ~ add-posts.tsx:160 ~ error:", error);
+      
+    }
+  },
+  { connection: redis }
+);
+
+queue.on("active", () => {
+  console.error("Queue active:");
+});
+
+// Job completed event
+queue.on("completed", (job) => {
+  console.log(`doc upload completed: ${job.id}`);
+});
+
+// Job failed event
+queue.on("failed", (job, err) => {
+  console.error(`Appointment reminder job failed: ${job?.id}`, err);
+});
+
 
 export default function handler(req: any, res: any) {
   return new Promise(async (resolve, reject) => {
