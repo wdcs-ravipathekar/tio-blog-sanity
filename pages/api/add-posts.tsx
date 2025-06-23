@@ -146,7 +146,7 @@ const queue = new Worker(
   async (job) => {
     try {
       const data = job.data;
-      // console.log("\nlogger-------> ~ add-posts.tsx:449 ~ data:", data);
+      console.log("\nlogger-------> ~ add-posts.tsx:449 ~ data:");
   
       const { item, sanityClient, authorDetails, languageDetails, categoryDetails, imageDetails } = data;
   
