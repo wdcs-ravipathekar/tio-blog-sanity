@@ -141,45 +141,45 @@ const handlePostCreation = async (reqBody: ReqBody) => {
   console.log(`(Log) Completed - Add posts via CSV upload - ${new Date()}`);
 };
 
-const queue = new Worker(
-  'postQueue',
-  async (job) => {
-    try {
-      const data = job.data;
-      console.log("\nlogger-------> ~ add-posts.tsx:449 ~ data:");
+// const queue = new Worker(
+//   'postQueue',
+//   async (job) => {
+//     try {
+//       const data = job.data;
+//       console.log("\nlogger-------> ~ add-posts.tsx:449 ~ data:");
   
-      const { item, sanityClient, authorDetails, languageDetails, categoryDetails, imageDetails } = data;
+//       const { item, sanityClient, authorDetails, languageDetails, categoryDetails, imageDetails } = data;
   
-      // Mapping CSV data according to the predefined post schema
-      const postDetailsObj = await mapDataToDefinedSchema(item, sanityClient, { authorDetails, languageDetails, categoryDetails, imageDetails });
-      // Creating post in sanity
-      await createSanityClient("staging").create(postDetailsObj);
-      console.log("🚀 ~ handlePostCreation ~ create:")
+//       // Mapping CSV data according to the predefined post schema
+//       const postDetailsObj = await mapDataToDefinedSchema(item, sanityClient, { authorDetails, languageDetails, categoryDetails, imageDetails });
+//       // Creating post in sanity
+//       await createSanityClient("staging").create(postDetailsObj);
+//       console.log("🚀 ~ handlePostCreation ~ create:")
   
-      console.log(`Processed post: ${data.item['URL Slug']}`);
+//       console.log(`Processed post: ${data.item['URL Slug']}`);
     
       
-    } catch (error) {
-      console.log("\nlogger-------> ~ add-posts.tsx:160 ~ error:", error);
+//     } catch (error) {
+//       console.log("\nlogger-------> ~ add-posts.tsx:160 ~ error:", error);
       
-    }
-  },
-  { connection: redis }
-);
+//     }
+//   },
+//   { connection: redis }
+// );
 
-queue.on("active", (job, err) => {
-  console.error("Queue active:", err);
-});
+// queue.on("active", (job, err) => {
+//   console.error("Queue active:", err);
+// });
 
-// Job completed event
-queue.on("completed", (job) => {
-  console.log(`doc upload completed: ${job.id}`);
-});
+// // Job completed event
+// queue.on("completed", (job) => {
+//   console.log(`doc upload completed: ${job.id}`);
+// });
 
-// Job failed event
-queue.on("failed", (job, err) => {
-  console.error(`Appointment reminder job failed: ${job?.id}`, err);
-});
+// // Job failed event
+// queue.on("failed", (job, err) => {
+//   console.error(`Appointment reminder job failed: ${job?.id}`, err);
+// });
 
 
 export default function handler(req: any, res: any) {
