@@ -108,7 +108,7 @@ export default function handler(req: any, res: any) {
       // Starting time log
       console.log(`(Log) Started - Add posts via CSV upload - ${new Date()}`);
       waitUntil(handlePostCreation(data as ReqBody).then(() => {
-        console.log(`(Log) Completed - Add posts via CSV upload - ${new Date()}`);
+        console.log(`Log Completed - Add posts via CSV upload - ${new Date()}`);
       }));
       // await handlePostCreation(data as ReqBody);
       res.status(200).json({ message: 'Success' });
