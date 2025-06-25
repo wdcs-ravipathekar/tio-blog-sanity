@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/add-posts.tsx": {
-      "maxDuration": 30 
+      "maxDuration": 900
     },
     "api/*.tsx": {
       "maxDuration": 900
