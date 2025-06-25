@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/add-posts.tsx": {
+      "maxDuration": 30 
+    },
+    "api/*.tsx": {
+      "maxDuration": 900
+    },
+    "src/api/*.tx": {
+      "maxDuration": 900
+    }
+  }
+}
