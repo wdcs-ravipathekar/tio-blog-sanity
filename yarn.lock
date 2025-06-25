@@ -1702,6 +1702,11 @@
     "@uiw/codemirror-extensions-basic-setup" "4.12.4"
     codemirror "^6.0.0"
 
+"@vercel/functions@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@vercel/functions/-/functions-2.2.2.tgz#770cd1c33f1d03f4ed31d81b72fc7eef273150e2"
+  integrity sha512-wgtgFwhYAUzS7UOvw44q14FaoRPONEnyoM0JlrjcDkI+kzSu7M8J5Tk5T3Kvv52//8is+HGxVQtaBSiO3G0wbw==
+
 "@vitejs/plugin-react@^3.0.0":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@vitejs/plugin-react/-/plugin-react-3.0.1.tgz#ad21fb81377970dd4021a31cd95a03eb6f5c4c48"
